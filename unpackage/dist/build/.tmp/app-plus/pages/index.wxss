@@ -1,0 +1,149 @@
+
+.username{
+	padding: 12rpx 0 0 5rpx;
+	height: 72rpx;
+	width: 100%;
+	position: fixed;
+	background-color: #FFFFFF;
+	z-index: 0;
+}
+.address{
+	z-index: -1;
+}
+.time{
+	z-index: -1;
+}
+.name{
+	width: 40%;
+	font-size: auto;
+}
+.header{
+	background: #CE3C39;
+	width: 100%;
+	height: 72rpx;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: horizontal;
+	-webkit-box-direction: normal;
+	-webkit-flex-direction: row;
+	    -ms-flex-direction: row;
+	        flex-direction: row;
+	position: fixed;
+	margin-top: 72rpx;
+	z-index: 0;
+}
+.calendar{
+	width: 48rpx;
+	height: 48rpx;
+	margin: 5rpx 24rpx;
+}
+.cal-img{
+	width: 60rpx;
+	height: 60rpx;
+	padding: 5rpx 24rpx;
+}
+.title{
+	padding-top: 17rpx;
+	margin-left: 200rpx;
+}
+.user{
+	padding-left: 140rpx;
+	padding-top: 19rpx;
+	font-size: 30rpx;
+	color: #F3F3F3;
+}
+.body{
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	-webkit-flex-direction: column;
+	    -ms-flex-direction: column;
+	        flex-direction: column;
+	padding-top: 158rpx;
+}
+.loadText{
+	padding-top: 10rpx;
+	padding-bottom:10rpx;
+	height: 40rpx;
+	margin-left: 38%;
+	color: #8799A3;
+	z-index: -1;
+}
+.item{
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: horizontal;
+	-webkit-box-direction: normal;
+	-webkit-flex-direction: row;
+	    -ms-flex-direction: row;
+	        flex-direction: row;
+	-webkit-justify-content: space-around;
+	    -ms-flex-pack: distribute;
+	        justify-content: space-around;
+	height: 72rpx;
+	font-size: 30rpx;
+	margin-top: 16rpx;
+}
+.item image{
+	width: 44rpx;
+	height: 44rpx;
+	vertical-align: middle;
+}
+.liner{
+	width: 100%;
+	height: 1rpx;
+	background-color: #CCCCCC;
+	position: relative;
+	top:-10rpx;
+	z-index: -1;
+}
+.modal{
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: horizontal;
+	-webkit-box-direction: normal;
+	-webkit-flex-direction: row;
+	    -ms-flex-direction: row;
+	        flex-direction: row;
+	-webkit-justify-content: space-around;
+	    -ms-flex-pack: distribute;
+	        justify-content: space-around;
+	margin-top: 50rpx;
+	height: 72rpx;
+	font-size: 36rpx;
+}
+.mname{
+	font-size: 36rpx;
+}
+.maddres{
+	font-size: 30rpx;
+	margin-top: 5rpx;
+}
+.mtime{
+	font-size: 30rpx;
+	margin-top: 5rpx;
+}
+.mliner{
+	width: 95%;
+	margin-top:-20rpx;
+	margin-left: 2.5%;
+	height: 1rpx;
+	background-color: #CCCCCC;
+	position: relative;
+}
+.mtext{
+	height: 200rpx;
+	font-size: 30rpx;
+	text-align: left;
+	padding: 30rpx 4% 0 4%;
+}
+
