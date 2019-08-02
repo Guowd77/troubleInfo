@@ -11,7 +11,9 @@
 				<image class="cal-img" src="../static/calendar.png" @click="open"></image>
 			</view>
 			<view class="title">{{focusDate}}</view>
-			<view class="user" @click="chooseSpace">区域</view>
+			<picker class="user" mode="multiSelector" @change="chooseFocusPlace" @columnchange="bindMultiPickerColumnChange" :value="multiIndex" :range="multiArray">
+				<view class="uni-input">区域</view>
+			</picker>
 		</view>
 		
 		    <view class="body">
@@ -29,7 +31,7 @@
 				</view>
 				<view class="liner"></view>
 			</view>
-			<view v-if="modalShow" class="cu-modal" :class="modalName=='Image'?'show':''">
+			<view v-if="modalShow" class="cu-modal" :class="modalName=='Image'?'show':''"  @touchmove.stop.prevent="moveHandle">
 				<view class="cu-dialog">
 					<!-- <view class="bg-img" v-bind:style="{backgroundImage: 'url(http://122.112.219.13:8080/oil/upload/'+showList[modalNumber].filename+')',height:300+'upx'}">
 						<view class="cu-bar justify-end text-red text-bold">
@@ -74,7 +76,7 @@
 
 <script>
 	import {uniCalendar} from "@/components/uni-calendar/uni-calendar"
-	import {getInfo} from '../api.js'
+	import {getInfo,getDepart} from '../api.js'
 	import {sortArray} from '../request.js'
 	export default{
 		components: {
@@ -91,9 +93,21 @@
 				modalName: null,
 				modalShow:0,
 				seaList:'',
+				seaListDepart:'',
 				showList:[],
 				page:0,
-				loadText:''
+				loadText:'',
+				multiArray: [
+					['成都市'],
+					[],
+					[]
+				],
+				multiIndex: [0, 0, 0],
+				allList:[{
+					name:'成都市',
+					child1:[]
+				}],
+				focusPlace:''
 			}
 		},
 		methods:{
@@ -119,15 +133,33 @@
 			open(){
 				this.$refs.calendar.open();
 			},
+			chooseFocusPlace(e){
+				this.focusPlace=this.allList[e.detail.value[0]].child1[e.detail.value[1]].child2[e.detail.value[2]];
+				console.log(this.focusPlace);
+				this.showList=[];
+				this.seaListDepart=this.searchDepart(this.focusPlace);
+				if(this.seaListDepart.length!=0){
+					for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaListDepart.length;i++){
+						this.showList.push(this.seaListDepart[i]);
+					}
+					if(this.showList.length<this.seaListDepart.length){
+							this.loadText="上拉加载更多";
+						} 
+						else if(this.showList.length==this.seaListDepart.length){
+							this.loadText="加载完毕";
+						}
+				}
+				else if(this.seaListDepart.length==0){
+					this.loadText="该加油站没有数据";
+				}
+			},
 			confirm(e) {
 				this.page=0;
-				console.log(e);
 				console.log(e.fulldate);
 				this.focusDate=e.fulldate;
 				this.seaList=[];
 				this.seaList=this.search(e.fulldate);
 				this.seaList=sortArray(this.seaList);
-				console.log(this.seaList);
 				this.showList=[];
 				if(this.seaList.length!=0){
 					for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaList.length;i++){
@@ -144,7 +176,6 @@
 				else if(this.seaList.length==0){
 					this.loadText="本日没有数据";
 				}
-				console.log(this.showList)
 			},
 			search(keywords){
 				var newList = []
@@ -155,10 +186,41 @@
 					})
 				return newList
 			},
-			chooseSpace(){
-				
-			}
-			
+			searchDepart(keywords){
+				var newList = []
+				this.seaList.forEach(item => {
+				if (item.departname.indexOf(keywords) != -1) {
+					newList.push(item)
+					}
+					})
+				return newList
+			},
+			bindMultiPickerColumnChange: function(e) {
+				this.multiIndex[e.detail.column] = e.detail.value
+				/* for(var i = 0;i<this.allList[0].length;i++){
+					if(e.detail.column==i){
+						for(var j=0;j<this.allList[0].child1[i].length;j++){
+							if(this.multiIndex[i])
+						}
+					}
+				} */
+				switch (e.detail.column) {
+					case 0: //拖动第1列
+						this.multiIndex.splice(1, 1, 0)
+						this.multiIndex.splice(2, 1, 0)
+						break
+					case 1: //拖动第2列
+						for(var i=0;i<this.allList[0].child1.length;i++){
+							if(this.multiIndex[1]==i){
+								this.multiArray[2]=this.allList[0].child1[i].child2
+								break
+							}
+						}
+						this.multiIndex.splice(2, 1, 0)
+						break
+				}
+				this.$forceUpdate()
+			},
 		},
 		onLoad(option) {
 			this.code=option.code;
@@ -168,21 +230,39 @@
             var m = (dt.getMonth() + 1).toString().padStart(2, '0')
             var d = dt.getDate().toString().padStart(2, '0')
 			this.focusDate=`${y}-${m}-${d}`;
+			const data={
+				departid:this.code
+			}
+			var that=this;
+			getDepart(data).then(res=>{
+				for(var i=0;i<res.data.length;i++){
+					if(res.data[i].orgcode.length==3){
+						that.allList[0].child1.push({name:res.data[i].childname,child2:[]})
+						that.multiArray[1].push(res.data[i].childname)
+					}
+					else if(res.data[i].orgcode.length>3){
+						for(var j=0;j<that.allList[0].child1.length;j++){
+							if(res.data[i].departname==that.allList[0].child1[j].name){
+								that.allList[0].child1[j].child2.push(res.data[i].childname)
+								if(j==0){
+									that.multiArray[2].push(res.data[i].childname)
+								}
+							}
+						}
+					}
+				}
+				console.log(that.allList)
+			})
 		},
 		mounted() {
 			const data={
 				departid:this.code
 			}
 			var that=this;
-			console.log(data);
 			getInfo(data).then(res=>{
 				that.list=res.data;
-				console.log(that.list);
-				console.log(that.list[0]);
-				console.log(that.list[0].time);
 				that.seaList=that.search(that.focusDate);
 				that.seaList=sortArray(that.seaList);
-				console.log(that.seaList);
 				if(that.seaList.length!=0){
 					for (let i=0,j=i;i<j+15&&i<that.seaList.length;i++){
 						that.seaList[i].newtime=that.seaList[i].time.substring(11,16);
@@ -198,10 +278,10 @@
 				else if(that.seaList.length==0){
 					that.loadText="本日没有数据"
 				}
+				uni.hideLoading()
 			})
 		},
 		onReachBottom(){
-			console.log('触发');
 			this.page=this.page+1;
 			if(this.seaList.length!=0){
 				for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaList.length;i++){
@@ -279,7 +359,6 @@
 	.user{
 
 		padding-right: 3%;
-		color: #F3F3F3;
 	}
 	.body{
 		display: flex;
@@ -290,7 +369,7 @@
 		padding-top: 10upx;
 		padding-bottom:10upx ;
 		height: 40upx;
-		margin-left: 38%;
+		text-align: center;
 		color: #8799A3;
 		z-index: -1;
 	}

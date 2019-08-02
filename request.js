@@ -4,12 +4,13 @@ var requestURL='http://122.112.219.13:8080/oil/'//api地址
 function Request(data, url, method) {
 	//console.log(data)
 	var Reurl='';
+	Reurl=requestURL + url;
 	if(url =='getUser.do'){
-		Reurl=requestURL + url+'?username='+data.username+'&password='+data.password;
+		Reurl=requestURL+url+'?username='+data.username+'&password='+data.password;
 	}
-	else{
-		Reurl=requestURL + url
-	};
+	if(url =="getdepartList.do"){
+		Reurl='http://oil.nat123.cc/oil/getdepartList.do?departid=A01';
+	}
 	return new Promise((resolve, reject) => {
 		uni.showLoading()
 		uni.request({
@@ -40,18 +41,18 @@ function Request(data, url, method) {
 
 			},
 			fail: err => {
+				uni.hideLoading()
 				uni.showToast({
 					title: '服务器异常',
 					icon:'none',
 					mask: false,
 					duration: 1500
 				});
-				uni.hideLoading()
 				console.log('err')
 				reject(err)
 			}
 		})
-	}).catch(err => console.log(err))
+	}).catch(err => {console.log(err)})
 }
 
 function sortNumber(a,b)
