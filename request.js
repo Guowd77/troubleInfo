@@ -1,6 +1,6 @@
 import store from './store'
 
-var requestURL='http://122.112.219.13:8080/oil/'//api地址
+var requestURL='http://118.121.27.25:18080/oil/'//api地址
 function Request(data, url, method) {
 	//console.log(data)
 	var Reurl='';
@@ -8,9 +8,7 @@ function Request(data, url, method) {
 	if(url =='getUser.do'){
 		Reurl=requestURL+url+'?username='+data.username+'&password='+data.password;
 	}
-	if(url =="getdepartList.do"){
-		Reurl='http://oil.nat123.cc/oil/getdepartList.do?departid=A01';
-	}
+	
 	return new Promise((resolve, reject) => {
 		uni.showLoading()
 		uni.request({

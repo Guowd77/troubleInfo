@@ -9,3 +9,6 @@ export function getInfo(data){
 export function getDepart(data){
 	return request(data,"getdepartList.do",'GET')
 }
+export function getVideo(data){
+	return request(data,"getfile.do",'GET')
+}

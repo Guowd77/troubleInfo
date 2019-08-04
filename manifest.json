@@ -16,7 +16,8 @@
         },
         "modules" : {
             "Push" : {},
-            "OAuth" : {}
+            "OAuth" : {},
+            "VideoPlayer" : {}
         },
         /* 模块配置 */
         "distribute" : {

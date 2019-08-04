@@ -11,11 +11,13 @@
 				<image class="cal-img" src="../static/calendar.png" @click="open"></image>
 			</view>
 			<view class="title">{{focusDate}}</view>
+			<!-- <picker class="user" @change="chooseFocusHour" :value="ndex" :range="array" range-key="name">
+				<view class="uni-input">时间</view>
+			</picker> -->
 			<picker class="user" mode="multiSelector" @change="chooseFocusPlace" @columnchange="bindMultiPickerColumnChange" :value="multiIndex" :range="multiArray">
 				<view class="uni-input">区域</view>
 			</picker>
 		</view>
-		
 		    <view class="body">
 			<view class="" v-for="(item,index) in showList" v-key="item.id">
 				<view class="" @click="showModal(index)" >
@@ -33,15 +35,16 @@
 			</view>
 			<view v-if="modalShow" class="cu-modal" :class="modalName=='Image'?'show':''"  @touchmove.stop.prevent="moveHandle">
 				<view class="cu-dialog">
-					<!-- <view class="bg-img" v-bind:style="{backgroundImage: 'url(http://122.112.219.13:8080/oil/upload/'+showList[modalNumber].filename+')',height:300+'upx'}">
-						<view class="cu-bar justify-end text-red text-bold">
+					<view v-show="!showVideo" class="bg-img" v-bind:style="{backgroundImage:'url(http://118.121.27.25:18080/oil/upload/'+showList[modalNumber].filename+')',height:300+'upx'}">
+						<!-- 'url(http://118.121.27.25:18080/oil/upload/'+showList[modalNumber].filename+')' -->
+						<!-- <view class="cu-bar justify-end text-red text-bold">
 							<view class="action" @tap="hideModal">
 								<text class="cuIcon-close "></text>
 							</view>
-						</view>
-					</view> -->
-					<video id="myVideo" style="margin-top: 20upx;" src="https://dcloud-img.oss-cn-hangzhou.aliyuncs.com/guide/uniapp/%E7%AC%AC1%E8%AE%B2%EF%BC%88uni-app%E4%BA%A7%E5%93%81%E4%BB%8B%E7%BB%8D%EF%BC%89-%20DCloud%E5%AE%98%E6%96%B9%E8%A7%86%E9%A2%91%E6%95%99%E7%A8%8B@20181126.mp4"
-                    ></video>
+						</view> -->
+					</view>
+					<video v-if="showVideo" id="myVideo" style="margin-top: 20upx;"  @error="videoErrorCallback" v-bind:src="videoUrl" 
+                    ></video>  <!-- src="http://118.121.27.25:18080/oil/upload/0057_20190717083341_02.MP4" -->
 					<view class="modal">
 						<view class="mname">{{showList[modalNumber].safeRiskName}}</view>
 						<view class="maddres">
@@ -55,9 +58,13 @@
 					<view class="mtext">
 						{{showList[modalNumber].saferiskdetails}}
 					</view>
-					
-					<view class="cu-bar bg-red text-white radius">
-						<view class="action margin-0 flex-sub  solid-left" @tap="hideModal">我知道了</view>
+					<view class="flex flex-wrap">
+						<view class="basis-df cu-bar bg-grey text-white">
+							<view class="action flex-sub  solid-left" @tap="switchVideo">播放/关闭视频</view>
+						</view>
+						<view class="basis-df cu-bar bg-red text-white">
+							<view class="action flex-sub  solid-left" @tap="hideModal">我知道了</view>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -76,7 +83,7 @@
 
 <script>
 	import {uniCalendar} from "@/components/uni-calendar/uni-calendar"
-	import {getInfo,getDepart} from '../api.js'
+	import {getInfo,getDepart,getVideo} from '../api.js'
 	import {sortArray} from '../request.js'
 	export default{
 		components: {
@@ -95,8 +102,37 @@
 				seaList:'',
 				seaListDepart:'',
 				showList:[],
+				showVideo:0,
+				haveVideo:0,
+				videoUrl:'',
 				page:0,
 				loadText:'',
+				/* array:[
+					{time:'00:00'},
+					{time:'01:00'},
+					{time:'02:00'},
+					{time:'03:00'},
+					{time:'04:00'},
+					{time:'05:00'},
+					{time:'06:00'},
+					{time:'07:00'},
+					{time:'08:00'},
+					{time:'09:00'},
+					{time:'10:00'},
+					{time:'11:00'},
+					{time:'12:00'},
+					{time:'13:00'},
+					{time:'14:00'},
+					{time:'15:00'},
+					{time:'16:00'},
+					{time:'17:00'},
+					{time:'18:00'},
+					{time:'19:00'},
+					{time:'20:00'},
+					{time:'21:00'},
+					{time:'22:00'},
+					{time:'23:00'}
+				], */
 				multiArray: [
 					['成都市'],
 					[],
@@ -124,8 +160,42 @@
 			showModal(index) {
 				this.modalName = "Image";
 				this.modalShow=1;
+				this.haveVideo=0;
 				this.modalNumber=index;
+				let data={
+					filename:this.showList[index].filename.substring(0,this.showList[index].filename.length-4)
+				}
+				console.log(data)
+				getVideo(data).then(res=>{
+					if(res.data.msg=="success"){
+						if(res.data.data.type!='jpg'){
+							this.haveVideo=1
+							this.videoUrl=res.data.data.path
+						}
+					}
+					else{
+						this.haveVideo=0
+					}
+				})
 			},
+			switchVideo(){
+				if(this.haveVideo==1){
+					this.showVideo=!this.showVideo
+				}
+				else{
+					uni.showToast({
+						title: '本条无视频',
+						icon:'none',
+						duration: 1500,
+						});
+				}
+			},
+			videoErrorCallback: function(e) {
+            uni.showModal({
+                content: e.target.errMsg,
+                showCancel: false
+            })
+            },
 			hideModal() {
 				this.modalName = null;
 				this.modalShow=0;
@@ -137,6 +207,8 @@
 				this.focusPlace=this.allList[e.detail.value[0]].child1[e.detail.value[1]].child2[e.detail.value[2]];
 				console.log(this.focusPlace);
 				this.showList=[];
+				this.page=0;
+				console.log(this.seaList)
 				this.seaListDepart=this.searchDepart(this.focusPlace);
 				if(this.seaListDepart.length!=0){
 					for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaListDepart.length;i++){
@@ -150,10 +222,10 @@
 						}
 				}
 				else if(this.seaListDepart.length==0){
-					this.loadText="该加油站没有数据";
+					this.loadText="本日此加油站没有数据";
 				}
 			},
-			confirm(e) {
+			confirm(e) { //选择日期
 				this.page=0;
 				console.log(e.fulldate);
 				this.focusDate=e.fulldate;
@@ -162,8 +234,10 @@
 				this.seaList=sortArray(this.seaList);
 				this.showList=[];
 				if(this.seaList.length!=0){
+					for (let i=0;i<this.seaList.length;i++){
+						this.seaList[i].newtime=this.seaList[i].time.substring(11,16)
+					}
 					for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaList.length;i++){
-						this.seaList[i].newtime=this.seaList[i].time.substring(11,16);
 						this.showList.push(this.seaList[i]);
 					}
 					if(this.showList.length<this.seaList.length){
@@ -174,7 +248,7 @@
 						}
 				}
 				else if(this.seaList.length==0){
-					this.loadText="本日没有数据";
+					this.loadText="本日没有数据"
 				}
 			},
 			search(keywords){
@@ -188,6 +262,7 @@
 			},
 			searchDepart(keywords){
 				var newList = []
+				console.log(this.seaList)
 				this.seaList.forEach(item => {
 				if (item.departname.indexOf(keywords) != -1) {
 					newList.push(item)
@@ -234,22 +309,41 @@
 				departid:this.code
 			}
 			var that=this;
-			getDepart(data).then(res=>{
-				for(var i=0;i<res.data.length;i++){
-					if(res.data[i].orgcode.length==3){
-						that.allList[0].child1.push({name:res.data[i].childname,child2:[]})
-						that.multiArray[1].push(res.data[i].childname)
-					}
-					else if(res.data[i].orgcode.length>3){
-						for(var j=0;j<that.allList[0].child1.length;j++){
-							if(res.data[i].departname==that.allList[0].child1[j].name){
-								that.allList[0].child1[j].child2.push(res.data[i].childname)
-								if(j==0){
-									that.multiArray[2].push(res.data[i].childname)
+			getDepart(data).then(res=>{//根据返回的地区数据创建树形结构，成都市-xx区-xx加油站
+				if(res.data[0].orgcode.length==3){
+					for(var i=0;i<res.data.length;i++){
+						if(res.data[i].orgcode.length==3){
+							that.allList[0].child1.push({name:res.data[i].childname,child2:[]})
+							that.multiArray[1].push(res.data[i].childname)
+						}
+						else if(res.data[i].orgcode.length>3){
+							for(var j=0;j<that.allList[0].child1.length;j++){
+								if(res.data[i].departname==that.allList[0].child1[j].name){
+									that.allList[0].child1[j].child2.push(res.data[i].childname)
+									if(j==0){
+										that.multiArray[2].push(res.data[i].childname)//初始的第三列 (前两列分别为第一个选项)
+									}
 								}
 							}
 						}
 					}
+				}
+				else if(res.data[0].orgcode.length==6){
+					that.allList[0].child1.push({name:res.data[0].departname,child2:[]})
+					that.multiArray[1].push(res.data[0].departname)
+					for(var i=0;i<res.data.length;i++){
+						if(res.data[i].departname==that.allList[0].child1[0].name){
+							that.allList[0].child1[0].child2.push(res.data[i].childname)
+							that.multiArray[2].push(res.data[i].childname)//初始的第三列 (前两列分别为第一个选项)
+						}
+					}
+				}
+				else{
+					that.multiArray= [
+						[],
+						['服务器出错'],
+						[]
+					]
 				}
 				console.log(that.allList)
 			})
@@ -275,9 +369,10 @@
 						that.loadText="加载完毕";
 					}
 				}
-				else if(that.seaList.length==0){
+				if(that.seaList.length==0){
 					that.loadText="本日没有数据"
 				}
+				console.log(that.list)
 				uni.hideLoading()
 			})
 		},
@@ -285,7 +380,6 @@
 			this.page=this.page+1;
 			if(this.seaList.length!=0){
 				for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaList.length;i++){
-					this.seaList[i].newtime=this.seaList[i].time.substring(11,16);
 					this.showList.push(this.seaList[i])
 				}
 				if(this.showList.length<this.seaList.length){
