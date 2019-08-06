@@ -146,10 +146,10 @@
 				console.log(data)
 				getVideo(data).then(res=>{
 					if(res.data.msg=="success"){
-						if(res.data.data.type=='jpg'){
+						if(res.data.data.type!='jpg'){
 							this.haveVideo=1
-							//this.videoUrl=res.data.data.path
-							this.videoUrl="http://118.121.27.25:18080/oil/upload/0054_20190720120147_02.mp4"
+							this.videoUrl=res.data.data.path
+							this.showVideo=1;
 						}
 					}
 					else{
