@@ -107,41 +107,18 @@
 				videoUrl:'',
 				page:0,
 				loadText:'',
-				/* array:[
-					{time:'00:00'},
-					{time:'01:00'},
-					{time:'02:00'},
-					{time:'03:00'},
-					{time:'04:00'},
-					{time:'05:00'},
-					{time:'06:00'},
-					{time:'07:00'},
-					{time:'08:00'},
-					{time:'09:00'},
-					{time:'10:00'},
-					{time:'11:00'},
-					{time:'12:00'},
-					{time:'13:00'},
-					{time:'14:00'},
-					{time:'15:00'},
-					{time:'16:00'},
-					{time:'17:00'},
-					{time:'18:00'},
-					{time:'19:00'},
-					{time:'20:00'},
-					{time:'21:00'},
-					{time:'22:00'},
-					{time:'23:00'}
-				], */
 				multiArray: [
 					['成都市'],
-					[],
-					[]
+					['不限制'],
+					['不限制']       /* picker初始值 */
 				],
 				multiIndex: [0, 0, 0],
 				allList:[{
 					name:'成都市',
-					child1:[]
+					child1:[{
+						name:'不限制',
+						child2:['不限制']
+					}]
 				}],
 				focusPlace:''
 			}
@@ -172,7 +149,7 @@
 						if(res.data.data.type=='jpg'){
 							this.haveVideo=1
 							//this.videoUrl=res.data.data.path
-							this.videoUrl="http://118.121.27.25:18080/oil/upload/abc.mp4"
+							this.videoUrl="http://118.121.27.25:18080/oil/upload/0054_20190720120147_02.mp4"
 						}
 					}
 					else{
@@ -206,13 +183,23 @@
 			open(){
 				this.$refs.calendar.open();
 			},
-			chooseFocusPlace(e){
-				this.focusPlace=this.allList[e.detail.value[0]].child1[e.detail.value[1]].child2[e.detail.value[2]];
-				console.log(this.focusPlace);
+			chooseFocusPlace(e){//搜索到具体加油站时 按name搜索  搜索某区所有加油站时 按code搜索  搜索区不限时，推送当日所有数据
+				if(e.detail.value[1]==0){
+					this.seaListDepart=this.seaList;
+					this.focusPlace='all';
+				}
+				else if(e.detail.value[2]==0){
+					this.focusPlace=this.allList[e.detail.value[0]].child1[e.detail.value[1]].code;
+					this.seaListDepart=this.searchDepartByCode(this.focusPlace);
+				}
+				else{
+					this.focusPlace=this.allList[e.detail.value[0]].child1[e.detail.value[1]].child2[e.detail.value[2]];
+					this.seaListDepart=this.searchDepartByName(this.focusPlace);
+				}
 				this.showList=[];
 				this.page=0;
 				console.log(this.seaList)
-				this.seaListDepart=this.searchDepart(this.focusPlace);
+				console.log(this.seaListDepart);
 				if(this.seaListDepart.length!=0){
 					for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaListDepart.length;i++){
 						this.showList.push(this.seaListDepart[i]);
@@ -227,6 +214,7 @@
 				else if(this.seaListDepart.length==0){
 					this.loadText="本日此加油站没有数据";
 				}
+				console.log(this.focusPlace);
 			},
 			confirm(e) { //选择日期
 				this.page=0;
@@ -235,6 +223,8 @@
 				this.seaList=[];
 				this.seaList=this.search(e.fulldate);
 				this.seaList=sortArray(this.seaList);
+				this.seaListDepart=this.seaList;
+				console.log(this.seaList)
 				this.showList=[];
 				if(this.seaList.length!=0){
 					for (let i=0;i<this.seaList.length;i++){
@@ -263,11 +253,19 @@
 					})
 				return newList
 			},
-			searchDepart(keywords){
+			searchDepartByName(keywords){
 				var newList = []
-				console.log(this.seaList)
 				this.seaList.forEach(item => {
 				if (item.departname.indexOf(keywords) != -1) {
+					newList.push(item)
+					}
+					})
+				return newList
+			},
+			searchDepartByCode(keywords){
+				var newList = []
+				this.seaList.forEach(item => {
+				if (item.poscode.indexOf(keywords) != -1) {
 					newList.push(item)
 					}
 					})
@@ -316,28 +314,24 @@
 				if(res.data[0].orgcode.length==3){
 					for(var i=0;i<res.data.length;i++){
 						if(res.data[i].orgcode.length==3){
-							that.allList[0].child1.push({name:res.data[i].childname,child2:[]})
+							that.allList[0].child1.push({name:res.data[i].childname,code:res.data[i].childcode,child2:['不限制']})
 							that.multiArray[1].push(res.data[i].childname)
 						}
 						else if(res.data[i].orgcode.length>3){
 							for(var j=0;j<that.allList[0].child1.length;j++){
 								if(res.data[i].departname==that.allList[0].child1[j].name){
 									that.allList[0].child1[j].child2.push(res.data[i].childname)
-									if(j==0){
-										that.multiArray[2].push(res.data[i].childname)//初始的第三列 (前两列分别为第一个选项)
-									}
 								}
 							}
 						}
 					}
 				}
 				else if(res.data[0].orgcode.length==6){
-					that.allList[0].child1.push({name:res.data[0].departname,child2:[]})
+					that.allList[0].child1.push({name:res.data[0].departname,code:res.data[0].childcode,child2:['不限制']})
 					that.multiArray[1].push(res.data[0].departname)
 					for(var i=0;i<res.data.length;i++){
-						if(res.data[i].departname==that.allList[0].child1[0].name){
-							that.allList[0].child1[0].child2.push(res.data[i].childname)
-							that.multiArray[2].push(res.data[i].childname)//初始的第三列 (前两列分别为第一个选项)
+						if(res.data[i].departname==that.allList[0].child1[1].name){
+							that.allList[0].child1[1].child2.push(res.data[i].childname)
 						}
 					}
 				}
@@ -381,18 +375,18 @@
 		},
 		onReachBottom(){
 			this.page=this.page+1;
-			if(this.seaList.length!=0){
-				for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaList.length;i++){
-					this.showList.push(this.seaList[i])
+			if(this.seaListDepart.length!=0){
+				for (let i=0+this.page*15,j=i;i<j+15&&i<this.seaListDepart.length;i++){
+					this.showList.push(this.seaListDepart[i])
 				}
-				if(this.showList.length<this.seaList.length){
+				if(this.showList.length<this.seaListDepart.length){
 						this.loadText="上拉加载更多";
 					} 
-					else if(this.showList.length==this.seaList.length){
+					else if(this.showList.length==this.seaListDepart.length){
 						this.loadText="--加载完毕--";
 					}
 			}
-				else if(this.seaList.length==0){
+				else if(this.seaListDepart.length==0){
 					this.loadText="本日没有数据"
 				}
 				uni.showLoading({
