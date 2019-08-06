@@ -760,7 +760,7 @@ function initData(vueOptions, context) {
     try {
       data = data.call(context); // 支持 Vue.prototype 上挂的数据
     } catch (e) {
-      if (Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.warn('根据 Vue 的 data 函数初始化小程序 data 失败，请尽量确保 data 函数中不访问 vm 对象，否则可能影响首次数据渲染速度。', data);
       }
     }
@@ -6964,7 +6964,7 @@ function type(obj) {
 
 function flushCallbacks$1(vm) {
     if (vm.__next_tick_callbacks && vm.__next_tick_callbacks.length) {
-        if (Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+        if (Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:flushCallbacks[' + vm.__next_tick_callbacks.length + ']');
@@ -6985,14 +6985,14 @@ function nextTick$1(vm, cb) {
     //1.nextTick 之前 已 setData 且 setData 还未回调完成
     //2.nextTick 之前存在 render watcher
     if (!vm.__next_tick_pending && !hasRenderWatcher(vm)) {
-        if(Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:nextVueTick');
         }
         return nextTick(cb, vm)
     }else{
-        if(Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance$1 = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance$1.is || mpInstance$1.route) + '][' + vm._uid +
                 ']:nextMPTick');
@@ -7068,7 +7068,7 @@ var patch = function(oldVnode, vnode) {
     });
     var diffData = diff(data, mpData);
     if (Object.keys(diffData).length) {
-      if (Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + this._uid +
           ']差量更新',
           JSON.stringify(diffData));
@@ -8613,7 +8613,7 @@ createPage(_login.default);
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.userlogin = userlogin;exports.getInfo = getInfo;exports.getDepart = getDepart;var _request = _interopRequireDefault(__webpack_require__(/*! request.js */ 20));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+Object.defineProperty(exports, "__esModule", { value: true });exports.userlogin = userlogin;exports.getInfo = getInfo;exports.getDepart = getDepart;exports.getVideo = getVideo;var _request = _interopRequireDefault(__webpack_require__(/*! request.js */ 20));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
 
 function userlogin(data) {
   return (0, _request.default)(data, "getUser.do", 'POST');
@@ -8623,6 +8623,9 @@ function getInfo(data) {
 }
 function getDepart(data) {
   return (0, _request.default)(data, "getdepartList.do", 'GET');
+}
+function getVideo(data) {
+  return (0, _request.default)(data, "getfile.do", 'GET');
 }
 
 /***/ }),
@@ -8636,7 +8639,7 @@ function getDepart(data) {
 "use strict";
 /* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = _default;exports.sortArray = sortArray;var _store = _interopRequireDefault(__webpack_require__(/*! ./store */ 11));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
 
-var requestURL = 'http://122.112.219.13:8080/oil/'; //api地址
+var requestURL = 'http://118.121.27.25:18080/oil/'; //api地址
 function Request(data, url, method) {
   //console.log(data)
   var Reurl = '';
@@ -8644,9 +8647,7 @@ function Request(data, url, method) {
   if (url == 'getUser.do') {
     Reurl = requestURL + url + '?username=' + data.username + '&password=' + data.password;
   }
-  if (url == "getdepartList.do") {
-    Reurl = 'http://oil.nat123.cc/oil/getdepartList.do?departid=A01';
-  }
+
   return new Promise(function (resolve, reject) {
     uni.showLoading();
     uni.request({
@@ -8660,7 +8661,7 @@ function Request(data, url, method) {
         resolve(res, data);
         if (data.status == 0) {
           uni.showToast({
-            title: '登陆成功',
+            title: '登录成功',
             icon: 'none',
             mask: false,
             duration: 1500 });
@@ -8688,7 +8689,7 @@ function Request(data, url, method) {
         reject(err);
       } });
 
-  }).catch(function (err) {return console.log(err);});
+  }).catch(function (err) {console.log(err);});
 }
 
 function sortNumber(a, b)

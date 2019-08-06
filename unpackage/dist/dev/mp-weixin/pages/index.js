@@ -181,6 +181,15 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
+
+
+
 var _api = __webpack_require__(/*! ../api.js */ 19);
 var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = function uniCalendar() {return Promise.all(/*! import() | components/uni-calendar/uni-calendar */[__webpack_require__.e("common/vendor"), __webpack_require__.e("components/uni-calendar/uni-calendar")]).then(__webpack_require__.bind(null, /*! @/components/uni-calendar/uni-calendar */ 31));};var _default =
 {
@@ -198,9 +207,50 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
       modalName: null,
       modalShow: 0,
       seaList: '',
+      seaListDepart: '',
       showList: [],
+      showVideo: 0,
+      haveVideo: 0,
+      videoUrl: '',
       page: 0,
-      loadText: '' };
+      loadText: '',
+      /* array:[
+                    	{time:'00:00'},
+                    	{time:'01:00'},
+                    	{time:'02:00'},
+                    	{time:'03:00'},
+                    	{time:'04:00'},
+                    	{time:'05:00'},
+                    	{time:'06:00'},
+                    	{time:'07:00'},
+                    	{time:'08:00'},
+                    	{time:'09:00'},
+                    	{time:'10:00'},
+                    	{time:'11:00'},
+                    	{time:'12:00'},
+                    	{time:'13:00'},
+                    	{time:'14:00'},
+                    	{time:'15:00'},
+                    	{time:'16:00'},
+                    	{time:'17:00'},
+                    	{time:'18:00'},
+                    	{time:'19:00'},
+                    	{time:'20:00'},
+                    	{time:'21:00'},
+                    	{time:'22:00'},
+                    	{time:'23:00'}
+                    ], */
+      multiArray: [
+      ['成都市'],
+      [],
+      []],
+
+      multiIndex: [0, 0, 0],
+      allList: [{
+        name: '成都市',
+        child1: [] }],
+
+      focusPlace: '' };
 
   },
   methods: {
@@ -214,10 +264,45 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
         url: 'login' });
 
     },
-    showModal: function showModal(index) {
+    showModal: function showModal(index) {var _this = this;
       this.modalName = "Image";
       this.modalShow = 1;
+      this.haveVideo = 0;
       this.modalNumber = index;
+      var data = {
+        filename: this.showList[index].filename.substring(0, this.showList[index].filename.length - 4) };
+
+      console.log(data);
+      (0, _api.getVideo)(data).then(function (res) {
+        if (res.data.msg == "success") {
+          if (res.data.data.type == 'jpg') {
+            _this.haveVideo = 1;
+            //this.videoUrl=res.data.data.path
+            _this.videoUrl = "../static/Twitter.mp4";
+          }
+        } else
+        {
+          _this.haveVideo = 0;
+        }
+      });
+    },
+    switchVideo: function switchVideo() {
+      if (this.haveVideo == 1) {
+        this.showVideo = !this.showVideo;
+      } else
+      {
+        uni.showToast({
+          title: '本条无视频',
+          icon: 'none',
+          duration: 1500 });
+
+      }
+    },
+    videoErrorCallback: function videoErrorCallback(e) {
+      uni.showModal({
+        content: e.target.errMsg,
+        showCancel: false });
+
     },
     hideModal: function hideModal() {
       this.modalName = null;
@@ -226,9 +311,30 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
     open: function open() {
       this.$refs.calendar.open();
     },
-    confirm: function confirm(e) {
+    chooseFocusPlace: function chooseFocusPlace(e) {
+      this.focusPlace = this.allList[e.detail.value[0]].child1[e.detail.value[1]].child2[e.detail.value[2]];
+      console.log(this.focusPlace);
+      this.showList = [];
       this.page = 0;
-      console.log(e);
+      console.log(this.seaList);
+      this.seaListDepart = this.searchDepart(this.focusPlace);
+      if (this.seaListDepart.length != 0) {
+        for (var i = 0 + this.page * 15, j = i; i < j + 15 && i < this.seaListDepart.length; i++) {
+          this.showList.push(this.seaListDepart[i]);
+        }
+        if (this.showList.length < this.seaListDepart.length) {
+          this.loadText = "上拉加载更多";
+        } else
+        if (this.showList.length == this.seaListDepart.length) {
+          this.loadText = "加载完毕";
+        }
+      } else
+      if (this.seaListDepart.length == 0) {
+        this.loadText = "本日此加油站没有数据";
+      }
+    },
+    confirm: function confirm(e) {//选择日期
+      this.page = 0;
       console.log(e.fulldate);
       this.focusDate = e.fulldate;
       this.seaList = [];
@@ -236,9 +342,11 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
       this.seaList = (0, _request.sortArray)(this.seaList);
       this.showList = [];
       if (this.seaList.length != 0) {
-        for (var i = 0 + this.page * 15, j = i; i < j + 15 && i < this.seaList.length; i++) {
+        for (var i = 0; i < this.seaList.length; i++) {
           this.seaList[i].newtime = this.seaList[i].time.substring(11, 16);
-          this.showList.push(this.seaList[i]);
+        }
+        for (var _i = 0 + this.page * 15, j = _i; _i < j + 15 && _i < this.seaList.length; _i++) {
+          this.showList.push(this.seaList[_i]);
         }
         if (this.showList.length < this.seaList.length) {
           this.loadText = "上拉加载更多";
@@ -250,7 +358,6 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
       if (this.seaList.length == 0) {
         this.loadText = "本日没有数据";
       }
-      console.log(this.showList);
     },
     search: function search(keywords) {
       var newList = [];
@@ -261,10 +368,42 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
       });
       return newList;
     },
-    chooseSpace: function chooseSpace() {
+    searchDepart: function searchDepart(keywords) {
+      var newList = [];
+      console.log(this.seaList);
+      this.seaList.forEach(function (item) {
+        if (item.departname.indexOf(keywords) != -1) {
+          newList.push(item);
+        }
+      });
+      return newList;
+    },
+    bindMultiPickerColumnChange: function bindMultiPickerColumnChange(e) {
+      this.multiIndex[e.detail.column] = e.detail.value;
+      /* for(var i = 0;i<this.allList[0].length;i++){
+                                                         	if(e.detail.column==i){
+                                                         		for(var j=0;j<this.allList[0].child1[i].length;j++){
+                                                         			if(this.multiIndex[i])
+                                                         		}
+                                                         	}
+                                                         } */
+      switch (e.detail.column) {
+        case 0: //拖动第1列
+          this.multiIndex.splice(1, 1, 0);
+          this.multiIndex.splice(2, 1, 0);
+          break;
+        case 1: //拖动第2列
+          for (var i = 0; i < this.allList[0].child1.length; i++) {
+            if (this.multiIndex[1] == i) {
+              this.multiArray[2] = this.allList[0].child1[i].child2;
+              break;
+            }
+          }
+          this.multiIndex.splice(2, 1, 0);
+          break;}
 
+      this.$forceUpdate();
     } },
-
 
   onLoad: function onLoad(option) {
     this.code = option.code;
@@ -278,9 +417,43 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
       departid: this.code };
 
     var that = this;
-    console.log(data);
-    (0, _api.getDepart)(data).then(function (res) {
-      console.log(res.data);
+    (0, _api.getDepart)(data).then(function (res) {//根据返回的地区数据创建树形结构，成都市-xx区-xx加油站
+      if (res.data[0].orgcode.length == 3) {
+        for (var i = 0; i < res.data.length; i++) {
+          if (res.data[i].orgcode.length == 3) {
+            that.allList[0].child1.push({ name: res.data[i].childname, child2: [] });
+            that.multiArray[1].push(res.data[i].childname);
+          } else
+          if (res.data[i].orgcode.length > 3) {
+            for (var j = 0; j < that.allList[0].child1.length; j++) {
+              if (res.data[i].departname == that.allList[0].child1[j].name) {
+                that.allList[0].child1[j].child2.push(res.data[i].childname);
+                if (j == 0) {
+                  that.multiArray[2].push(res.data[i].childname); //初始的第三列 (前两列分别为第一个选项)
+                }
+              }
+            }
+          }
+        }
+      } else
+      if (res.data[0].orgcode.length == 6) {
+        that.allList[0].child1.push({ name: res.data[0].departname, child2: [] });
+        that.multiArray[1].push(res.data[0].departname);
+        for (var i = 0; i < res.data.length; i++) {
+          if (res.data[i].departname == that.allList[0].child1[0].name) {
+            that.allList[0].child1[0].child2.push(res.data[i].childname);
+            that.multiArray[2].push(res.data[i].childname); //初始的第三列 (前两列分别为第一个选项)
+          }
+        }
+      } else
+      {
+        that.multiArray = [
+        [],
+        ['服务器出错'],
+        []];
+
+      }
+      console.log(that.allList);
     });
   },
   mounted: function mounted() {
@@ -288,15 +461,10 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
       departid: this.code };
 
     var that = this;
-    console.log(data);
     (0, _api.getInfo)(data).then(function (res) {
       that.list = res.data;
-      console.log(that.list);
-      console.log(that.list[0]);
-      console.log(that.list[0].time);
       that.seaList = that.search(that.focusDate);
       that.seaList = (0, _request.sortArray)(that.seaList);
-      console.log(that.seaList);
       if (that.seaList.length != 0) {
         for (var i = 0, j = i; i < j + 15 && i < that.seaList.length; i++) {
           that.seaList[i].newtime = that.seaList[i].time.substring(11, 16);
@@ -308,18 +476,18 @@ var _request = __webpack_require__(/*! ../request.js */ 20);var uniCalendar = fu
         if (that.showList.length == that.seaList.length) {
           that.loadText = "加载完毕";
         }
-      } else
+      }
       if (that.seaList.length == 0) {
         that.loadText = "本日没有数据";
       }
+      console.log(that.list);
+      uni.hideLoading();
     });
   },
   onReachBottom: function onReachBottom() {
-    console.log('触发');
     this.page = this.page + 1;
     if (this.seaList.length != 0) {
       for (var i = 0 + this.page * 15, j = i; i < j + 15 && i < this.seaList.length; i++) {
-        this.seaList[i].newtime = this.seaList[i].time.substring(11, 16);
         this.showList.push(this.seaList[i]);
       }
       if (this.showList.length < this.seaList.length) {

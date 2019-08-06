@@ -35,7 +35,7 @@
 			</view>
 			<view v-if="modalShow" class="cu-modal" :class="modalName=='Image'?'show':''"  @touchmove.stop.prevent="moveHandle">
 				<view class="cu-dialog">
-					<view v-show="!showVideo" class="bg-img" v-bind:style="{backgroundImage:'url(http://118.121.27.25:18080/oil/upload/'+showList[modalNumber].filename+')',height:300+'upx'}">
+					<view v-show="!showVideo" class="bg-img"  v-bind:style="{backgroundImage:'url(http://118.121.27.25:18080/oil/upload/'+showList[modalNumber].filename+')',height:500+'upx'}">
 						<!-- 'url(http://118.121.27.25:18080/oil/upload/'+showList[modalNumber].filename+')' -->
 						<!-- <view class="cu-bar justify-end text-red text-bold">
 							<view class="action" @tap="hideModal">
@@ -43,7 +43,7 @@
 							</view>
 						</view> -->
 					</view>
-					<video v-if="showVideo" id="myVideo" style="margin-top: 20upx;"  @error="videoErrorCallback" v-bind:src="videoUrl" 
+					<video v-if="showVideo" id="myVideo" style="margin-top: 20upx;"  @error="videoErrorCallback" v-bind:src="videoUrl"
                     ></video>  <!-- src="http://118.121.27.25:18080/oil/upload/0057_20190717083341_02.MP4" -->
 					<view class="modal">
 						<view class="mname">{{showList[modalNumber].safeRiskName}}</view>
@@ -158,6 +158,7 @@
 				})
 			},
 			showModal(index) {
+				this.showVideo=0;
 				this.modalName = "Image";
 				this.modalShow=1;
 				this.haveVideo=0;
@@ -168,9 +169,10 @@
 				console.log(data)
 				getVideo(data).then(res=>{
 					if(res.data.msg=="success"){
-						if(res.data.data.type!='jpg'){
+						if(res.data.data.type=='jpg'){
 							this.haveVideo=1
-							this.videoUrl=res.data.data.path
+							//this.videoUrl=res.data.data.path
+							this.videoUrl="http://118.121.27.25:18080/oil/upload/abc.mp4"
 						}
 					}
 					else{
@@ -181,6 +183,7 @@
 			switchVideo(){
 				if(this.haveVideo==1){
 					this.showVideo=!this.showVideo
+					console.log(this.videoUrl)
 				}
 				else{
 					uni.showToast({

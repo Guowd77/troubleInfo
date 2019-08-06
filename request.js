@@ -22,7 +22,7 @@ function Request(data, url, method) {
 				resolve(res,data)
 				if(data.status==0){
 					uni.showToast({
-						title: '登陆成功',
+						title: '登录成功',
 						icon:'none',
 						mask: false,
 						duration: 1500
