@@ -84,7 +84,6 @@
 <script>
 	import {uniCalendar} from "@/components/uni-calendar/uni-calendar"
 	import {getInfo,getDepart,getVideo} from '../api.js'
-	import {sortArray} from '../request.js'
 	export default{
 		components: {
 			uniCalendar
@@ -222,7 +221,6 @@
 				this.focusDate=e.fulldate;
 				this.seaList=[];
 				this.seaList=this.search(e.fulldate);
-				this.seaList=sortArray(this.seaList);
 				this.seaListDepart=this.seaList;
 				console.log(this.seaList)
 				this.showList=[];
@@ -335,6 +333,10 @@
 						}
 					}
 				}
+				else if(res.data[0].orgcode.length==9){
+					that.allList[0].child1[0].child2.push(res.data[0].departname)
+					that.allList[0].child1[0].code=res.data[0].orgcode
+				}
 				else{
 					that.multiArray= [
 						[],
@@ -353,7 +355,6 @@
 			getInfo(data).then(res=>{
 				that.list=res.data;
 				that.seaList=that.search(that.focusDate);
-				that.seaList=sortArray(that.seaList);
 				if(that.seaList.length!=0){
 					for (let i=0,j=i;i<j+15&&i<that.seaList.length;i++){
 						that.seaList[i].newtime=that.seaList[i].time.substring(11,16);
