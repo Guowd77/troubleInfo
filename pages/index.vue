@@ -107,13 +107,12 @@
 				page:0,
 				loadText:'',
 				multiArray: [
-					['成都市'],
+					[],
 					['不限制'],
 					['不限制']       /* picker初始值 */
 				],
 				multiIndex: [0, 0, 0],
 				allList:[{
-					name:'成都市',
 					child1:[{
 						name:'不限制',
 						child2:['不限制']
@@ -145,7 +144,7 @@
 				console.log(data)
 				getVideo(data).then(res=>{
 					if(res.data.msg=="success"){
-						if(res.data.data.type!='jpg'){
+						if(res.data.data.type=='mp4'){
 							this.haveVideo=1
 							this.videoUrl=res.data.data.path
 							this.showVideo=1;
@@ -305,38 +304,72 @@
             var d = dt.getDate().toString().padStart(2, '0')
 			this.focusDate=`${y}-${m}-${d}`;
 			const data={
-				departid:this.code
+				departid:this.code.substring(0,3)
 			}
 			var that=this;
 			getDepart(data).then(res=>{//根据返回的地区数据创建树形结构，成都市-xx区-xx加油站
 				if(res.data[0].orgcode.length==3){
-					for(var i=0;i<res.data.length;i++){
-						if(res.data[i].orgcode.length==3){
-							that.allList[0].child1.push({name:res.data[i].childname,code:res.data[i].childcode,child2:['不限制']})
-							that.multiArray[1].push(res.data[i].childname)
-						}
-						else if(res.data[i].orgcode.length>3){
-							for(var j=0;j<that.allList[0].child1.length;j++){
-								if(res.data[i].departname==that.allList[0].child1[j].name){
-									that.allList[0].child1[j].child2.push(res.data[i].childname)
+					that.allList[0].name=res.data[0].departname;
+					that.allList[0].code=res.data[0].orgcode;
+					that.multiArray[0]=[that.allList[0].name];
+					if(that.code.length==3){
+						for(var i=0;i<res.data.length;i++){
+							if(res.data[i].orgcode.length==3){
+								that.allList[0].child1.push({name:res.data[i].childname,code:res.data[i].childcode,child2:['不限制']})
+								that.multiArray[1].push(res.data[i].childname)
+							}
+							else if(res.data[i].orgcode.length>3){
+								for(var j=0;j<that.allList[0].child1.length;j++){
+									if(res.data[i].departname==that.allList[0].child1[j].name){
+										that.allList[0].child1[j].child2.push(res.data[i].childname)
+									}
 								}
 							}
 						}
 					}
+					else if(that.code.length==6){
+						for(var i=0;i<res.data.length;i++){
+							if(res.data[i].childcode==that.code){
+								that.allList[0].child1.push({name:res.data[i].childname,code:res.data[i].childcode,child2:['不限制']})
+								that.multiArray[1].push(res.data[i].childname)
+							}
+							else if(res.data[i].orgcode==that.code){
+								that.allList[0].child1[1].child2.push(res.data[i].childname)
+								that.multiArray[2].push(res.data[i].childname)
+							}
+						}
+						that.multiIndex[1]=1;
+					}
+					else if(that.code.length==9){
+						for(var i=0;i<res.data.length;i++){
+							if(res.data[i].childcode==that.code){
+								that.allList[0].child1.push({name:res.data[i].departname,code:res.data[i].orgcode,child2:['不限制']})
+								that.multiArray[1].push(res.data[i].departname)
+								that.allList[0].child1[1].child2.push(res.data[i].childname)
+								that.multiArray[2].push(res.data[i].childname)
+							}
+						}
+						that.multiIndex[1]=1;
+						that.multiIndex[2]=1;
+					}
 				}
-				else if(res.data[0].orgcode.length==6){
-					that.allList[0].child1.push({name:res.data[0].departname,code:res.data[0].childcode,child2:['不限制']})
+				/* else if(res.data[0].orgcode.length==6){
+					that.allList[0].child1.push({name:res.data[0].departname,code:res.data[0].orgcode,child2:['不限制']})
 					that.multiArray[1].push(res.data[0].departname)
 					for(var i=0;i<res.data.length;i++){
 						if(res.data[i].departname==that.allList[0].child1[1].name){
 							that.allList[0].child1[1].child2.push(res.data[i].childname)
+							that.multiArray[2].push(res.data[i].childname)
 						}
 					}
+					that.multiIndex[1]=1;
 				}
 				else if(res.data[0].orgcode.length==9){
 					that.allList[0].child1[0].child2.push(res.data[0].departname)
 					that.allList[0].child1[0].code=res.data[0].orgcode
-				}
+					that.multiArray[2].push(res.data[0].departname)
+					that.multiIndex[2]=1;
+				} */
 				else{
 					that.multiArray= [
 						[],
@@ -345,6 +378,7 @@
 					]
 				}
 				console.log(that.allList)
+				console.log(that.multiArray)
 			})
 		},
 		mounted() {
